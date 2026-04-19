@@ -4,6 +4,11 @@
 # Usage: ./deploy-jenkins.sh <CLUSTER_NAME> <REGION> <NAMESPACE>
 # Example: ./deploy-jenkins.sh my-cluster us-east-1 jenkins
 
+if ! command -v helm &> /dev/null; then
+    echo "Helm not found. Please install Helm before running this script."
+    exit 1
+fi
+
 # Step 1: Connecting to EKS cluster
 NAMESPACE="jenkins"
 CLUSTER_NAME=$(kubectl config current-context)
