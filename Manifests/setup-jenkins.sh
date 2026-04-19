@@ -34,6 +34,8 @@ helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE --set persistence.
   --set controller.startupProbe.periodSeconds=30 \
   --set controller.startupProbe.failureThreshold=20
 
+echo "waiting for startup probe to initiate after 480 seconds for Jenkins: $CLUSTER_NAME"
+
 # Step 6: Wait for Jenkins pod
 kubectl get pods -n $NAMESPACE
 
