@@ -27,7 +27,7 @@ helm repo add jenkinsci https://charts.jenkins.io
 helm repo update
 
 # Step 5: Deploy Jenkins
-helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE
+helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE --set persistence.enabled=false
 
 # Step 6: Wait for Jenkins pod
 kubectl get pods -n $NAMESPACE
