@@ -33,8 +33,7 @@ helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE --set persistence.
 kubectl get pods -n $NAMESPACE
 
 # Step 7: Get Jenkins admin password
-kubectl exec --namespace $NAMESPACE -it svc/jenkins -c jenkins \
-  -- cat /run/secrets/additional/chart-admin-password
+kubectl get secret jenkins -n $NAMESPACE -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode
 
 # Step 8: Port forward Jenkins service
 kubectl port-forward svc/jenkins 9090:8080 -n $NAMESPACE
