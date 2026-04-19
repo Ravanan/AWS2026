@@ -27,7 +27,12 @@ helm repo add jenkinsci https://charts.jenkins.io
 helm repo update
 
 # Step 5: Deploy Jenkins
-helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE --set persistence.enabled=false
+helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE --set persistence.enabled=false\
+  --set controller.startupProbe.httpGet.path=/ \
+  --set controller.startupProbe.httpGet.port=8080 \
+  --set controller.startupProbe.initialDelaySeconds=480 \
+  --set controller.startupProbe.periodSeconds=30 \
+  --set controller.startupProbe.failureThreshold=20
 
 # Step 6: Wait for Jenkins pod
 kubectl get pods -n $NAMESPACE
