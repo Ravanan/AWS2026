@@ -27,7 +27,9 @@ helm repo add jenkinsci https://charts.jenkins.io
 helm repo update
 
 # Step 5: Deploy Jenkins
-helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE --set persistence.enabled=false\
+helm install jenkins jenkinsci/jenkins --namespace $NAMESPACE \
+  --set persistence.enabled=true \
+  --set persistence.existingClaim=jenkins-pvc \
   --set controller.startupProbe.httpGet.path=/ \
   --set controller.startupProbe.httpGet.port=8080 \
   --set controller.startupProbe.initialDelaySeconds=480 \
