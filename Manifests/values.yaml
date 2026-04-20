@@ -3,6 +3,8 @@ persistence:
   existingClaim: jenkins-pvc
 
 controller:
+  nodeSelector:
+    karpenter.sh/nodepool: general-purpose
   startupProbe:
     httpGet:
       path: /
