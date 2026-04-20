@@ -35,7 +35,7 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: gp2
+  storageClassName: gp3
 EOF
 
 
