@@ -30,8 +30,11 @@ helm upgrade --install $RELEASE_NAME jenkins/jenkins \
   --set controller.serviceType=LoadBalancer \
   --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=$NODEPOOL_LABEL_KEY \
   --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
-  --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=$NODEPOOL_LABEL_VALUE
-
+  --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=$NODEPOOL_LABEL_VALUE \
+  --set controller.tolerations[0].key=$NODEPOOL_LABEL_KEY \
+  --set controller.tolerations[0].operator=Equal \
+  --set controller.tolerations[0].value=$NODEPOOL_LABEL_VALUE \
+  --set controller.tolerations[0].effect=NoSchedule
 # 4. Wait for Jenkins pod to be ready
 echo "Waiting for Jenkins pod to be ready..."
 kubectl rollout status deployment/$RELEASE_NAME -n $NAMESPACE
