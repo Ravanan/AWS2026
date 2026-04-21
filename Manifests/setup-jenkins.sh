@@ -7,10 +7,10 @@
 #$0 → the script name (setup-jenkins.sh)
 #$1 → the first argument (deploy)
 
-ACTION=$1
+
 #!/bin/bash
 set -e
-
+ACTION=$1
 # Variables
 NAMESPACE=jenkins
 RELEASE_NAME=jenkins
