@@ -1,4 +1,5 @@
 #!/bin/bash
+ACTION=$1
 set -e
 
 # Variables
@@ -9,6 +10,7 @@ STORAGE_CLASS=gp3     # Auto Mode supports gp3, not gp2
 NODEPOOL_LABEL_KEY=karpenter.sh/nodepool
 NODEPOOL_LABEL_VALUE=general-purpose
 
+if [ "$ACTION" == "deploy" ]; then
 # 1. Create namespace
 kubectl create namespace $NAMESPACE || echo "Namespace $NAMESPACE already exists"
 
@@ -39,4 +41,10 @@ echo "Jenkins URL:"
 kubectl get svc $RELEASE_NAME -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 echo
 echo "Login with username 'admin' and password 'admin123'"
+elif [ "$ACTION" == "delete" ]; then
+    helm uninstall jenkins -n $NAMESPACE
+    kubectl delete namespace $NAMESPACE
+else
+    echo "Usage: $0 {deploy|delete}"
+fi
 
