@@ -8,52 +8,52 @@
 #$1 → the first argument (deploy)
 
 ACTION=$1
-NAMESPACE="jenkins"
+#!/bin/bash
+set -e
 
-if ! command -v helm &> /dev/null; then
-    echo "Helm not found. Please install Helm before running this script."
-    exit 1
-fi
+# Variables
+NAMESPACE=jenkins
+RELEASE_NAME=jenkins
+CHART_VERSION=5.3.2   # Adjust to latest stable Jenkins chart version
+STORAGE_CLASS=gp3     # Auto Mode supports gp3, not gp2
+NODEPOOL_LABEL_KEY=karpenter.sh/nodepool
+NODEPOOL_LABEL_VALUE=general-purpose
 
-# Step 1: Connecting to EKS cluster
-if [ "$ACTION" == "deploy" ]; then
-echo "Connecting to EKS cluster: $(kubectl config current-context)"
+# 1. Create namespace
+kubectl create namespace $NAMESPACE || echo "Namespace $NAMESPACE already exists"
 
-# Ensure namespace exists
-kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
-
-# Create PVC inline
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: jenkins-pvc
-  namespace: $NAMESPACE
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: gp3
-EOF
-
-
-# Step 3: Add Jenkins Helm repo
-helm repo add jenkinsci https://charts.jenkins.io
+# 2. Add Jenkins Helm repo
+helm repo add jenkins https://charts.jenkins.io
 helm repo update
 
-# Deploy Jenkins using values.yaml
-helm install jenkins jenkinsci/jenkins -n $NAMESPACE -f values.yaml
-    
-echo "Waiting for Jenkins pod to start..."
-kubectl get pods -n $NAMESPACE
+# 3. Install Jenkins with persistence enabled, affinity, and tolerations
+helm upgrade --install $RELEASE_NAME jenkins/jenkins \
+  --namespace $NAMESPACE \
+  --version $CHART_VERSION \
+  --set controller.admin.username=admin \
+  --set controller.admin.password=admin123 \
+  --set persistence.enabled=true \
+  --set persistence.storageClass=$STORAGE_CLASS \
+  --set persistence.size=20Gi \
+  --set controller.serviceType=LoadBalancer \
+  --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=$NODEPOOL_LABEL_KEY \
+  --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
+  --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=$NODEPOOL_LABEL_VALUE \
+  --set controller.tolerations[0].key=$NODEPOOL_LABEL_KEY \
+  --set controller.tolerations[0].operator=Equal \
+  --set controller.tolerations[0].value=$NODEPOOL_LABEL_VALUE \
+  --set controller.tolerations[0].effect=NoSchedule
 
-# Step 7: Get Jenkins admin password
-kubectl get secret jenkins -n $NAMESPACE -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode
+# 4. Wait for Jenkins pod to be ready
+echo "Waiting for Jenkins pod to be ready..."
+kubectl rollout status deployment/$RELEASE_NAME -n $NAMESPACE
 
-# Step 8: Port forward Jenkins service
-kubectl port-forward svc/jenkins 8080:8080 -n $NAMESPACE
+# 5. Get LoadBalancer URL
+echo "Jenkins URL:"
+kubectl get svc $RELEASE_NAME -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+echo
+echo "Login with username 'admin' and password 'admin123'"
+
 
 elif [ "$ACTION" == "delete" ]; then
     helm uninstall jenkins -n $NAMESPACE
