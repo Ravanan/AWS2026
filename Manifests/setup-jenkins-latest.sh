@@ -22,8 +22,8 @@ helm repo update
 helm upgrade --install $RELEASE_NAME jenkins/jenkins \
   --namespace $NAMESPACE \
   --version $CHART_VERSION \
-  --set controller.adminUser=admin \
-  --set controller.adminPassword=admin123 \
+  --set controller.admin.username=admin \
+  --set controller.admin.password=admin123 \
   --set persistence.enabled=true \
   --set persistence.storageClass=$STORAGE_CLASS \
   --set persistence.size=20Gi \
