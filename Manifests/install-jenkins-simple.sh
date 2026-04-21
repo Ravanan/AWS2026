@@ -28,7 +28,7 @@ helm upgrade --install $JENKINS_RELEASE_NAME jenkins/jenkins \
   --set persistence.size=20Gi \
   --set rbac.create=true \
   --wait \
-  --timeout 15m
+  --timeout 3m
 
 echo "✅ Jenkins installed successfully!"
 echo ""
