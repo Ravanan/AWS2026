@@ -1,0 +1,28 @@
+persistence:
+  enabled: true
+  existingClaim: jenkins-pvc
+
+controller:
+  nodeSelector:
+    karpenter.sh/nodepool: general-purpose
+  startupProbe:
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 480
+    periodSeconds: 30
+    failureThreshold: 20
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 600
+    periodSeconds: 30
+    failureThreshold: 10
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 8080
+    initialDelaySeconds: 600
+    periodSeconds: 30
+    failureThreshold: 10
